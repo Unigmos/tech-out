@@ -11,9 +11,38 @@ const posts = (await getCollection('tech'))
 <BaseLayout title="記事一覧">
 	<main>
 		<h1>記事一覧</h1>
+		<input
+			type="search"
+			class="search-input"
+			placeholder="タイトル・タグで検索..."
+			data-search-input
+		/>
 		<PostList posts={posts} />
 	</main>
 </BaseLayout>
+
+<script>
+	const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+	const cards = document.querySelectorAll<HTMLElement>('[data-post-card]');
+	const noResults = document.querySelector<HTMLElement>('[data-no-results]');
+
+	input?.addEventListener('input', () => {
+		const query = input.value.trim().toLowerCase();
+		let visibleCount = 0;
+
+		cards.forEach((card) => {
+			const title = card.dataset.title ?? '';
+			const tags = card.dataset.tags ?? '';
+			const matches = query === '' || title.includes(query) || tags.includes(query);
+			card.hidden = !matches;
+			if (matches) visibleCount++;
+		});
+
+		if (noResults) {
+			noResults.hidden = visibleCount > 0;
+		}
+	});
+</script>
 
 <style>
 	main {
@@ -27,5 +56,28 @@ const posts = (await getCollection('tech'))
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		margin: 0 0 2rem;
+	}
+
+	.search-input {
+		width: 100%;
+		font: inherit;
+		font-size: 0.95rem;
+		color: var(--color-text);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		padding: 0.65rem 1rem;
+		margin-bottom: 1.5rem;
+		outline: none;
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
+
+	.search-input::placeholder {
+		color: var(--color-text-muted);
+	}
+
+	.search-input:focus {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px var(--color-accent-soft);
 	}
 </style>

@@ -8,9 +8,14 @@ interface Props {
 const { posts } = Astro.props;
 ---
 
-<ul class="post-list">
+<ul class="post-list" data-post-list>
 	{posts.map((post) => (
-		<li class="post-card">
+		<li
+			class="post-card"
+			data-post-card
+			data-title={post.data.title.toLowerCase()}
+			data-tags={post.data.tags.join(',').toLowerCase()}
+		>
 			<a class="post-card-link" href={`${import.meta.env.BASE_URL}tech/${post.id}/`}>
 				<div class="post-card-top">
 					<span class="post-title">{post.data.title}</span>
@@ -31,8 +36,15 @@ const { posts } = Astro.props;
 		</li>
 	))}
 </ul>
+<p class="no-results" data-no-results hidden>該当する記事が見つかりませんでした。</p>
 
 <style>
+	.no-results {
+		color: var(--color-text-muted);
+		font-size: 0.9rem;
+		padding: 1rem 0;
+	}
+
 	.post-list {
 		list-style: none;
 		margin: 0;
@@ -53,6 +65,10 @@ const { posts } = Astro.props;
 		flex-direction: column;
 		gap: 0.6rem;
 		transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+	}
+
+	.post-card[hidden] {
+		display: none;
 	}
 
 	.post-card:hover {
