@@ -1,43 +1,49 @@
-# Astro Starter Kit: Minimal
+# Tech Notes
+
+個人の技術学習記事を公開しているサイトのソースリポジトリです。
+
+**サイト**: https://Unigmos.github.io/tech-out/
+
+## 概要
+
+- [Astro](https://astro.build)（Content Collections）+ GitHub Pagesで構築した静的サイトです
+- 記事コンテンツは非公開の個人リポジトリの`knowledge/tech`配下から、frontmatterで`publish: true`になっている記事のみが自動同期されます
+- **`src/content/tech/`配下は自動同期の対象なので、このリポジトリ側で直接編集しないでください**（次回の同期で上書きされます。記事の修正は同期元の非公開リポジトリ側で行ってください）
+
+## 構成
+
+```
+src/
+├── content.config.ts       # 記事frontmatterのスキーマ定義（title, publish, tags, created_at, updated_at）
+├── content/tech/           # 同期された記事本体（自動生成・直接編集禁止）
+├── layouts/
+│   └── BaseLayout.astro    # 共通レイアウト（ヘッダー、テーマ切替、View Transitions、全体CSS）
+├── components/
+│   └── PostList.astro      # 記事一覧のカード表示コンポーネント（検索対応）
+└── pages/
+    ├── index.astro         # 記事一覧・検索
+    ├── tech/[...id].astro  # 記事詳細ページ
+    └── tags/[tag].astro    # タグ別の記事一覧ページ
+```
+
+## 主な機能
+
+- タイトル・タグの部分一致によるその場検索
+- タグごとの記事一覧ページ（記事内のタグをクリックで遷移）
+- OSのテーマ設定に連動したライト/ダーク表示（手動切り替えも可能、選択は記憶されます）
+- Astro View Transitionsによるページ遷移アニメーション
+
+## 開発
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev      # http://localhost:4321 で開発サーバー起動
+npm run build    # ./dist/ に静的ファイルを出力
+npm run preview  # ビルド結果をローカルで確認
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## デプロイ
 
-## 🚀 Project Structure
+`main`ブランチへのpushをトリガーに、GitHub Actions（`.github/workflows/deploy.yml`）が自動的にAstroのビルドとGitHub Pagesへのデプロイを行います。
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+同期元の非公開リポジトリの`knowledge/tech`配下がpushされると、そちら側のワークフローが`publish: true`の記事を抽出してこのリポジトリにpushし、それが上記のデプロイをトリガーする、という流れになっています。
