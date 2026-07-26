@@ -22,25 +22,28 @@ const posts = (await getCollection('tech'))
 </BaseLayout>
 
 <script>
-	const input = document.querySelector<HTMLInputElement>('[data-search-input]');
-	const cards = document.querySelectorAll<HTMLElement>('[data-post-card]');
-	const noResults = document.querySelector<HTMLElement>('[data-no-results]');
+	// ClientRouterによるページ遷移のたびに再実行されるよう、astro:page-loadで初期化する
+	document.addEventListener('astro:page-load', () => {
+		const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+		const cards = document.querySelectorAll<HTMLElement>('[data-post-card]');
+		const noResults = document.querySelector<HTMLElement>('[data-no-results]');
 
-	input?.addEventListener('input', () => {
-		const query = input.value.trim().toLowerCase();
-		let visibleCount = 0;
+		input?.addEventListener('input', () => {
+			const query = input.value.trim().toLowerCase();
+			let visibleCount = 0;
 
-		cards.forEach((card) => {
-			const title = card.dataset.title ?? '';
-			const tags = card.dataset.tags ?? '';
-			const matches = query === '' || title.includes(query) || tags.includes(query);
-			card.hidden = !matches;
-			if (matches) visibleCount++;
+			cards.forEach((card) => {
+				const title = card.dataset.title ?? '';
+				const tags = card.dataset.tags ?? '';
+				const matches = query === '' || title.includes(query) || tags.includes(query);
+				card.hidden = !matches;
+				if (matches) visibleCount++;
+			});
+
+			if (noResults) {
+				noResults.hidden = visibleCount > 0;
+			}
 		});
-
-		if (noResults) {
-			noResults.hidden = visibleCount > 0;
-		}
 	});
 </script>
 
