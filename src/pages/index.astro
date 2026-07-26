@@ -1,17 +1,29 @@
 ---
+import { getCollection } from 'astro:content';
 
+const posts = (await getCollection('tech'))
+	.filter((post) => post.data.publish)
+	.sort((a, b) => b.data.created_at.valueOf() - a.data.created_at.valueOf());
 ---
 
-<html lang="en">
+<html lang="ja">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+		<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Tech記事一覧</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<h1>Tech記事一覧</h1>
+		<ul>
+			{posts.map((post) => (
+				<li>
+					<a href={`${import.meta.env.BASE_URL}tech/${post.id}/`}>{post.data.title}</a>
+					（{post.data.created_at.toISOString().slice(0, 10)}）
+				</li>
+			))}
+		</ul>
 	</body>
 </html>

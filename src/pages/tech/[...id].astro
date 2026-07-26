@@ -1,0 +1,31 @@
+---
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+	const posts = (await getCollection('tech')).filter((post) => post.data.publish);
+	return posts.map((post) => ({
+		params: { id: post.id },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+		<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{post.data.title}</title>
+	</head>
+	<body>
+		<a href={import.meta.env.BASE_URL}>← 一覧に戻る</a>
+		<article>
+			<Content />
+		</article>
+	</body>
+</html>
