@@ -9,8 +9,6 @@ created_at: 2026-04-16
 updated_at: 2026-07-26
 ---
 
-# 【Elixir】Phoenix LiveView触る
-
 Elixir言語のphoenixフレームワークの中にLiveViewという機能があるのですが、そちらを触ってみました。<br>
 
 ## LiveViewでリアルタイム処理するまでの流れ

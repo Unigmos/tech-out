@@ -9,8 +9,6 @@ created_at: 2026-04-13
 updated_at: 2026-07-26
 ---
 
-# 【PHP】belongsToやhasManyの内部構造
-
 Laravelを始めたときに大体出てくる仕組みですが、改めて調べ直してみました。<br>
 
 ## そもそも何か

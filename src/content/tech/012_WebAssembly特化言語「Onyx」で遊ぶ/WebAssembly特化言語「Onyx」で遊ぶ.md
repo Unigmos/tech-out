@@ -9,8 +9,6 @@ created_at: 2025-11-09
 updated_at: 2026-07-26
 ---
 
-# WebAssembly特化言語「Onyx」で遊ぶ
-
 お疲れ様です。<br>
 少し前にWebAssemblyとは何か？について投稿しましたが、調べていくうちにWebAssemblyを第一ターゲットとしたOnyx言語がありましたのでそちらについて勉強してみました。<br>
 

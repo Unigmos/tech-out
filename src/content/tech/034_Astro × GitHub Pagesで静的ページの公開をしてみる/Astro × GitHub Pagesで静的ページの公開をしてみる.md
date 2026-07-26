@@ -10,8 +10,6 @@ created_at: 2026-07-26
 updated_at: 2026-07-26
 ---
 
-# Astro × GitHub Pagesで静的ページの公開をしてみる
-
 お疲れ様です。<br>
 まとまった時間が取れたので、SSGとして話題になったAstroを触ってGitHub Pagesの公開に取り組んでみました。<br>
 

@@ -8,8 +8,6 @@ created_at: 2026-03-23
 updated_at: 2026-07-26
 ---
 
-# グラフ描画ができるフォント「Datatype」
-
 https://coliss.com/articles/freebies/turns-text-into-charts-datatype.html#h202<br>
 
 上記の記事で紹介されていたのですが、グラフ描画ができるDatatypeフォントなるものがあり、触ってみたのでその紹介になります。<br>
