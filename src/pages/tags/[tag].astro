@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+	const posts = (await getCollection('tech')).filter((post) => post.data.publish);
+	const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+
+	return tags.map((tag) => {
+		const filtered = posts
+			.filter((post) => post.data.tags.includes(tag))
+			.sort((a, b) => b.data.created_at.valueOf() - a.data.created_at.valueOf());
+		return {
+			params: { tag },
+			props: { tag, posts: filtered },
+		};
+	});
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`タグ: ${tag}`}>
+	<main>
+		<a class="back-link" href={import.meta.env.BASE_URL}>← 全記事に戻る</a>
+		<h1>タグ: {tag}</h1>
+		<PostList posts={posts} />
+	</main>
+</BaseLayout>
+
+<style>
+	main {
+		max-width: var(--content-width);
+		margin: 0 auto;
+		padding: 2.5rem 1.5rem 4rem;
+	}
+
+	.back-link {
+		display: inline-block;
+		margin-bottom: 2rem;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	.back-link:hover {
+		color: var(--color-accent);
+	}
+
+	h1 {
+		font-size: 1.9rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin: 0 0 2rem;
+	}
+</style>

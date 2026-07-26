@@ -1,0 +1,98 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	posts: CollectionEntry<'tech'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+<ul class="post-list">
+	{posts.map((post) => (
+		<li class="post-card">
+			<a class="post-card-link" href={`${import.meta.env.BASE_URL}tech/${post.id}/`}>
+				<div class="post-card-top">
+					<span class="post-title">{post.data.title}</span>
+					<time class="post-date">{post.data.created_at.toISOString().slice(0, 10)}</time>
+				</div>
+			</a>
+			{post.data.tags.length > 0 && (
+				<ul class="tag-list">
+					{post.data.tags.map((tag) => (
+						<li>
+							<a class="tag-pill" href={`${import.meta.env.BASE_URL}tags/${tag}/`}>
+								{tag}
+							</a>
+						</li>
+					))}
+				</ul>
+			)}
+		</li>
+	))}
+</ul>
+
+<style>
+	.post-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.post-card {
+		position: relative;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		box-shadow: var(--shadow-card);
+		padding: 1.1rem 1.35rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+	}
+
+	.post-card:hover {
+		transform: translateY(-2px);
+		border-color: var(--color-accent);
+		box-shadow: var(--shadow-card-hover);
+	}
+
+	/* カード全体をクリック可能にするため、リンクをカード全体に見えない状態で重ねる */
+	.post-card-link::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
+
+	.post-card-link {
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.post-card-link:hover {
+		text-decoration: none;
+	}
+
+	.post-card-top {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.post-title {
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+
+	.post-date {
+		flex-shrink: 0;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+</style>
