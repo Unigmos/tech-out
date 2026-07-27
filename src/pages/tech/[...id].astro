@@ -11,18 +11,59 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const articleNumber = post.id.match(/^(\d+)_/)?.[1] ?? post.id;
 ---
 
 <BaseLayout title={post.data.title}>
 	<main>
-		<a class="back-link" href={import.meta.env.BASE_URL}>← 一覧に戻る</a>
-		<article>
-			<header class="post-header">
-				<h1>{post.data.title}</h1>
-				<div class="post-meta">
-					<time>{post.data.created_at.toISOString().slice(0, 10)}</time>
-					{post.data.tags.length > 0 && (
+		<nav class="breadcrumb" aria-label="パンくずリスト">
+			<a href={import.meta.env.BASE_URL}>posts</a>
+			<span class="breadcrumb-sep">/</span>
+			<span class="breadcrumb-current">{articleNumber}</span>
+		</nav>
+
+		<div class="detail-banner" aria-hidden="true"></div>
+
+		<div class="detail-layout">
+			<article>
+				<header class="post-header">
+					<h1>{post.data.title}</h1>
+					<div class="post-meta">
+						<time>{post.data.created_at.toISOString().slice(0, 10)}</time>
+						{post.data.tags.length > 0 && (
+							<ul class="tag-list">
+								{post.data.tags.map((tag) => (
+									<li>
+										<a class="tag-pill" href={`${import.meta.env.BASE_URL}tags/${tag}/`}>
+											{tag}
+										</a>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				</header>
+				<Content />
+			</article>
+
+			<aside class="sidebar">
+				{toc.length > 0 && (
+					<div class="sidebar-section">
+						<h2 class="sidebar-heading">Contents</h2>
+						<ul class="toc-list">
+							{toc.map((heading) => (
+								<li class={`toc-item toc-depth-${heading.depth}`}>
+									<a href={`#${heading.slug}`}>{heading.text}</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+				{post.data.tags.length > 0 && (
+					<div class="sidebar-section">
+						<h2 class="sidebar-heading">Tags</h2>
 						<ul class="tag-list">
 							{post.data.tags.map((tag) => (
 								<li>
@@ -32,11 +73,10 @@ const { Content } = await render(post);
 								</li>
 							))}
 						</ul>
-					)}
-				</div>
-			</header>
-			<Content />
-		</article>
+					</div>
+				)}
+			</aside>
+		</div>
 	</main>
 </BaseLayout>
 
@@ -47,15 +87,60 @@ const { Content } = await render(post);
 		padding: 2.5rem 1.5rem 4rem;
 	}
 
-	.back-link {
-		display: inline-block;
+	.breadcrumb {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		margin-bottom: 2rem;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
+		font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	}
+
+	.breadcrumb a {
 		color: var(--color-text-muted);
 	}
 
-	.back-link:hover {
+	.breadcrumb a:hover {
 		color: var(--color-accent);
+		text-decoration: none;
+	}
+
+	.breadcrumb-sep {
+		color: var(--color-border);
+	}
+
+	.breadcrumb-current {
+		color: var(--color-text-muted);
+	}
+
+	.detail-banner {
+		height: 80px;
+		border-radius: 12px;
+		margin-bottom: 2rem;
+		background-color: var(--color-banner-bg);
+		background-image:
+			repeating-linear-gradient(45deg, var(--color-banner-line) 0, var(--color-banner-line) 1px, transparent 1px, transparent 18px),
+			repeating-linear-gradient(-45deg, var(--color-banner-line) 0, var(--color-banner-line) 1px, transparent 1px, transparent 18px);
+	}
+
+	.detail-layout {
+		display: grid;
+		grid-template-columns: 1fr 220px;
+		align-items: start;
+		gap: 3rem;
+	}
+
+	.detail-layout > article {
+		/* グリッドアイテムはデフォルトでmin-width: autoのため、
+		   コードブロック等の横長コンテンツがあると画面幅を超えて広がってしまう。
+		   0を指定して明示的に縮められるようにする */
+		min-width: 0;
+	}
+
+	@media (max-width: 860px) {
+		.detail-layout {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.post-header {
@@ -78,14 +163,69 @@ const { Content } = await render(post);
 		color: var(--color-text-muted);
 	}
 
+	.sidebar {
+		position: sticky;
+		top: calc(var(--header-height) + 1.5rem);
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	@media (max-width: 860px) {
+		.sidebar {
+			display: none;
+		}
+	}
+
+	.sidebar-heading {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		margin: 0 0 0.75rem;
+	}
+
+	.toc-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+		border-left: 1px solid var(--color-border);
+	}
+
+	.toc-item a {
+		display: block;
+		padding-left: 0.9rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		line-height: 1.4;
+	}
+
+	.toc-item a:hover {
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+
+	.toc-depth-3 a {
+		padding-left: 1.7rem;
+		font-size: 0.8rem;
+	}
+
 	article :global(h2) {
 		font-size: 1.35rem;
 		margin-top: 2.5rem;
+		padding-left: 0.75rem;
+		border-left: 3px solid var(--color-accent);
+		scroll-margin-top: calc(var(--header-height) + 1rem);
 	}
 
 	article :global(h3) {
 		font-size: 1.1rem;
 		margin-top: 2rem;
+		scroll-margin-top: calc(var(--header-height) + 1rem);
 	}
 
 	article :global(p) {

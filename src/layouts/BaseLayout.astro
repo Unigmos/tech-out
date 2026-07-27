@@ -66,19 +66,76 @@ const { title } = Astro.props;
 	<body>
 		<header class="site-header">
 			<a href={import.meta.env.BASE_URL} class="site-title">Tech Notes</a>
-			<button type="button" class="theme-toggle" data-theme-toggle aria-label="テーマを切り替え">
-				<svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-					<circle cx="12" cy="12" r="4" />
-					<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-				</svg>
-				<svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-				</svg>
-			</button>
+			<div class="header-actions">
+				<slot name="header-search" />
+				<button type="button" class="theme-toggle" data-theme-toggle aria-label="テーマを切り替え">
+					<svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+						<circle cx="12" cy="12" r="4" />
+						<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+					</svg>
+					<svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+					</svg>
+				</button>
+			</div>
 		</header>
 		<slot />
 	</body>
 </html>
+
+<script>
+	// コードブロックにヘッダー（言語名＋コピーボタン）を追加する
+	function enhanceCodeBlocks() {
+		document.querySelectorAll<HTMLPreElement>('article pre[data-language]').forEach((pre) => {
+			if (pre.parentElement?.classList.contains('code-block')) return;
+
+			const wrapper = document.createElement('div');
+			wrapper.className = 'code-block';
+
+			const header = document.createElement('div');
+			header.className = 'code-block-header';
+
+			const lang = document.createElement('span');
+			lang.className = 'code-lang';
+			lang.textContent = pre.dataset.language ?? '';
+
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'copy-btn';
+			button.setAttribute('aria-label', 'コードをコピー');
+			button.innerHTML =
+				'<svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+				'<svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+			button.addEventListener('click', async () => {
+				try {
+					await navigator.clipboard.writeText(pre.innerText);
+					button.classList.add('copied');
+					setTimeout(() => button.classList.remove('copied'), 1500);
+				} catch {
+					// クリップボード権限がない場合等は静かに無視する
+				}
+			});
+
+			header.append(lang, button);
+			pre.replaceWith(wrapper);
+			wrapper.append(header, pre);
+		});
+	}
+
+	document.addEventListener('astro:page-load', enhanceCodeBlocks);
+
+	// sticky固定したヘッダーの実際の高さをCSS変数にして、
+	// サイドバーの位置や見出しへのスクロール時にヘッダーと重ならないようにする
+	function updateHeaderHeight() {
+		const header = document.querySelector<HTMLElement>('.site-header');
+		if (!header) return;
+		document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`);
+	}
+
+	document.addEventListener('astro:page-load', updateHeaderHeight);
+	window.addEventListener('resize', updateHeaderHeight);
+</script>
 
 <style is:global>
 	:root {
@@ -87,12 +144,15 @@ const { title } = Astro.props;
 		--color-text: #1a1b1e;
 		--color-text-muted: #6b7280;
 		--color-border: #e5e7eb;
-		--color-accent: #6366f1;
-		--color-accent-soft: #eef2ff;
+		--color-accent: #ea580c;
+		--color-accent-soft: #ffedd5;
 		--color-code-bg: #f6f8fa;
-		--content-width: 720px;
+		--color-banner-bg: #14151a;
+		--color-banner-line: rgba(234, 88, 12, 0.4);
+		--content-width: 1040px;
+		--header-height: 89px;
 		--shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-		--shadow-card-hover: 0 12px 24px -8px rgba(99, 102, 241, 0.25);
+		--shadow-card-hover: 0 12px 24px -8px rgba(234, 88, 12, 0.25);
 	}
 
 	@media (prefers-color-scheme: dark) {
@@ -102,11 +162,13 @@ const { title } = Astro.props;
 			--color-text: #e5e7eb;
 			--color-text-muted: #9099a8;
 			--color-border: #2b2d33;
-			--color-accent: #818cf8;
-			--color-accent-soft: rgba(129, 140, 248, 0.15);
+			--color-accent: #fb923c;
+			--color-accent-soft: rgba(251, 146, 60, 0.15);
 			--color-code-bg: #1c1e24;
+			--color-banner-bg: #0c0d10;
+			--color-banner-line: rgba(251, 146, 60, 0.35);
 			--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
-			--shadow-card-hover: 0 12px 24px -8px rgba(129, 140, 248, 0.35);
+			--shadow-card-hover: 0 12px 24px -8px rgba(251, 146, 60, 0.3);
 		}
 	}
 
@@ -116,11 +178,13 @@ const { title } = Astro.props;
 		--color-text: #e5e7eb;
 		--color-text-muted: #9099a8;
 		--color-border: #2b2d33;
-		--color-accent: #818cf8;
-		--color-accent-soft: rgba(129, 140, 248, 0.15);
+		--color-accent: #fb923c;
+		--color-accent-soft: rgba(251, 146, 60, 0.15);
 		--color-code-bg: #1c1e24;
+		--color-banner-bg: #0c0d10;
+		--color-banner-line: rgba(251, 146, 60, 0.35);
 		--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
-		--shadow-card-hover: 0 12px 24px -8px rgba(129, 140, 248, 0.35);
+		--shadow-card-hover: 0 12px 24px -8px rgba(251, 146, 60, 0.3);
 	}
 
 	* {
@@ -130,6 +194,12 @@ const { title } = Astro.props;
 	html {
 		font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
 			"Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, Roboto, sans-serif;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		html {
+			scroll-behavior: smooth;
+		}
 	}
 
 	body {
@@ -142,15 +212,31 @@ const { title } = Astro.props;
 	}
 
 	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
 		max-width: var(--content-width);
 		margin: 0 auto;
-		padding: 1.5rem 1.5rem 0;
+		padding: 1.5rem 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 1rem;
+		background: var(--color-bg);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex: 1;
+		min-width: 0;
+		justify-content: flex-end;
 	}
 
 	.site-title {
+		flex-shrink: 0;
 		font-weight: 700;
 		font-size: 1.05rem;
 		letter-spacing: -0.01em;
@@ -237,6 +323,76 @@ const { title } = Astro.props;
 	pre code {
 		background: none;
 		padding: 0;
+	}
+
+	/* コードブロック（言語ラベル＋コピーボタン付き） */
+	.code-block {
+		margin: 1.5rem 0;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	.code-block-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 0.9rem;
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.code-lang {
+		font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.copy-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.8rem;
+		height: 1.8rem;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		padding: 0;
+		transition: background-color 0.15s ease, color 0.15s ease;
+	}
+
+	.copy-btn:hover {
+		background: var(--color-accent-soft);
+		color: var(--color-accent);
+	}
+
+	.copy-btn svg {
+		width: 0.95rem;
+		height: 0.95rem;
+	}
+
+	.copy-btn .icon-check {
+		display: none;
+		color: #16a34a;
+	}
+
+	.copy-btn.copied .icon-copy {
+		display: none;
+	}
+
+	.copy-btn.copied .icon-check {
+		display: block;
+	}
+
+	.code-block pre {
+		margin: 0;
+		border: none;
+		border-radius: 0;
 	}
 
 	.tag-list {
