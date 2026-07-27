@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostList from '../components/PostList.astro';
 import { getCollection } from 'astro:content';
+import { getSlug } from '../lib/slug';
 
 const posts = (await getCollection('tech'))
 	.filter((post) => post.data.publish)
@@ -28,7 +29,7 @@ const [latest, ...rest] = posts;
 				data-title={latest.data.title.toLowerCase()}
 				data-tags={latest.data.tags.join(',').toLowerCase()}
 			>
-				<a class="hero-card-link" href={`${import.meta.env.BASE_URL}tech/${latest.id}/`}>
+				<a class="hero-card-link" href={`${import.meta.env.BASE_URL}${getSlug(latest)}/`}>
 					<div class="hero-banner" aria-hidden="true"></div>
 					<div class="hero-body">
 						<span class="hero-eyebrow">Latest</span>

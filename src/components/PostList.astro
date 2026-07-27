@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { getSlug } from '../lib/slug';
 
 interface Props {
 	posts: CollectionEntry<'tech'>[];
@@ -16,7 +17,7 @@ const { posts } = Astro.props;
 			data-title={post.data.title.toLowerCase()}
 			data-tags={post.data.tags.join(',').toLowerCase()}
 		>
-			<a class="post-card-link" href={`${import.meta.env.BASE_URL}tech/${post.id}/`}>
+			<a class="post-card-link" href={`${import.meta.env.BASE_URL}${getSlug(post)}/`}>
 				<div class="post-card-banner" aria-hidden="true"></div>
 				<div class="post-card-body">
 					<time class="post-date">{post.data.created_at.toISOString().slice(0, 10)}</time>
