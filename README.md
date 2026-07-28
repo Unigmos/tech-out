@@ -14,24 +14,33 @@
 
 ```
 src/
-├── content.config.ts       # 記事frontmatterのスキーマ定義（title, publish, tags, created_at, updated_at）
-├── content/tech/           # 同期された記事本体（自動生成・直接編集禁止）
+├── content.config.ts    # 記事frontmatterのスキーマ定義（title, publish, tags, created_at, updated_at）
+├── content/tech/        # 同期された記事本体（自動生成・直接編集禁止）
+├── lib/
+│   └── slug.ts          # post.idから連番プレフィックスを除いたURLスラッグを生成する共通関数
 ├── layouts/
-│   └── BaseLayout.astro    # 共通レイアウト（ヘッダー、テーマ切替、View Transitions、全体CSS）
+│   └── BaseLayout.astro # 共通レイアウト（ヘッダー、テーマ切替、View Transitions、
+│                         # コードブロックのコピー機能、フッター、全体CSS）
 ├── components/
-│   └── PostList.astro      # 記事一覧のカード表示コンポーネント（検索対応）
+│   └── PostList.astro   # 記事一覧のカード表示コンポーネント（検索対応）
 └── pages/
-    ├── index.astro         # 記事一覧・検索
-    ├── tech/[...id].astro  # 記事詳細ページ
-    └── tags/[tag].astro    # タグ別の記事一覧ページ
+    ├── index.astro      # 記事一覧・検索
+    ├── [slug].astro     # 記事詳細ページ（例: /vscoderun-on-saveについて/）
+    └── tags/[tag].astro # タグ別の記事一覧ページ
 ```
+
+記事のURLは`src/lib/slug.ts`が生成するスラッグ（連番・重複フォルダ名を除いたもの）をそのまま使い、`/{slug}/`という1階層のシンプルな形になっています。
 
 ## 主な機能
 
-- タイトル・タグの部分一致によるその場検索
+- タイトル・タグの部分一致によるその場検索（ヘッダー内）
+- 最新記事を大きく見せるヒーローカード＋残りをグリッド表示する一覧ページ
 - タグごとの記事一覧ページ（記事内のタグをクリックで遷移）
 - OSのテーマ設定に連動したライト/ダーク表示（手動切り替えも可能、選択は記憶されます）
 - Astro View Transitionsによるページ遷移アニメーション
+- スクロールに追従するヘッダー、記事詳細の目次（現在地をハイライトするscrollspy付き）
+- コードブロックへの言語ラベル・コピー機能（クリップボードアイコン→コピー後チェックアイコンに変化）
+- フッターのGitHubリポジトリへのリンク
 
 ## 開発
 
