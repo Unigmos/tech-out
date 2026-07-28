@@ -81,6 +81,85 @@ const slug = getSlug(post);
 	</main>
 </BaseLayout>
 
+<script>
+	// 目次(Contents)で、現在読んでいるセクションをハイライトする(scrollspy)
+	let tocObserver: IntersectionObserver | null = null;
+	let tocScrollHandler: (() => void) | null = null;
+
+	function setupTocScrollSpy() {
+		tocObserver?.disconnect();
+		if (tocScrollHandler) {
+			window.removeEventListener('scroll', tocScrollHandler);
+			tocScrollHandler = null;
+		}
+
+		const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('.toc-item a')];
+		if (tocLinks.length === 0) return;
+
+		const linkBySlug = new Map<string, HTMLAnchorElement>();
+		tocLinks.forEach((link) => {
+			const targetId = link.getAttribute('href')?.slice(1);
+			if (targetId) linkBySlug.set(targetId, link);
+		});
+
+		function setActive(link: HTMLAnchorElement | undefined) {
+			tocLinks.forEach((l) => l.classList.remove('active'));
+			link?.classList.add('active');
+		}
+
+		// 初期表示では先頭のセクションをアクティブにしておく
+		setActive(tocLinks[0]);
+
+		const headerHeight =
+			parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) ||
+			80;
+
+		// クリック直後はスムーススクロール中の判定が意図しない項目を拾ってしまうため、
+		// 少しの間だけobserver/scrollによる自動更新を止めてクリックした項目を優先する
+		let suppressUntil = 0;
+
+		tocObserver = new IntersectionObserver(
+			(entries) => {
+				if (Date.now() < suppressUntil) return;
+				entries.forEach((entry) => {
+					const link = linkBySlug.get(entry.target.id);
+					if (!link || !entry.isIntersecting) return;
+					setActive(link);
+				});
+			},
+			{
+				rootMargin: `-${headerHeight + 16}px 0px -75% 0px`,
+				threshold: 0,
+			}
+		);
+
+		linkBySlug.forEach((_, id) => {
+			const heading = document.getElementById(id);
+			if (heading) tocObserver!.observe(heading);
+		});
+
+		// 末尾の見出しは、その下に十分な余白がないとobserverの監視帯に入らずアクティブにならない。
+		// ページ最下部までスクロールした場合は最後の項目を強制的にアクティブにする
+		tocScrollHandler = () => {
+			if (Date.now() < suppressUntil) return;
+			const atBottom =
+				window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+			if (atBottom) setActive(tocLinks[tocLinks.length - 1]);
+		};
+		window.addEventListener('scroll', tocScrollHandler, { passive: true });
+
+		// クリック時は即座にその項目をアクティブにする
+		tocLinks.forEach((link) => {
+			link.addEventListener('click', () => {
+				setActive(link);
+				suppressUntil = Date.now() + 700;
+			});
+		});
+	}
+
+	document.addEventListener('astro:page-load', setupTocScrollSpy);
+</script>
+
 <style>
 	main {
 		max-width: var(--content-width);
@@ -119,6 +198,7 @@ const slug = getSlug(post);
 		border-radius: 12px;
 		margin-bottom: 2rem;
 		background-color: var(--color-banner-bg);
+		transition: background-color 0.2s ease;
 		background-image:
 			repeating-linear-gradient(45deg, var(--color-banner-line) 0, var(--color-banner-line) 1px, transparent 1px, transparent 18px),
 			repeating-linear-gradient(-45deg, var(--color-banner-line) 0, var(--color-banner-line) 1px, transparent 1px, transparent 18px);
@@ -208,6 +288,13 @@ const slug = getSlug(post);
 	.toc-item a:hover {
 		color: var(--color-accent);
 		text-decoration: none;
+	}
+
+	.toc-item a.active {
+		color: var(--color-accent);
+		font-weight: 600;
+		box-shadow: -2px 0 0 var(--color-accent);
+		transition: color 0.15s ease, box-shadow 0.15s ease;
 	}
 
 	.toc-depth-3 a {

@@ -70,7 +70,8 @@ const { posts } = Astro.props;
 		border-radius: 14px;
 		box-shadow: var(--shadow-card);
 		overflow: hidden;
-		transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+		transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
+			background-color 0.2s ease;
 	}
 
 	.post-card[hidden] {
@@ -103,6 +104,7 @@ const { posts } = Astro.props;
 	.post-card-banner {
 		height: 84px;
 		background-color: var(--color-banner-bg);
+		transition: background-color 0.2s ease;
 		background-image:
 			linear-gradient(to top right, rgba(0, 0, 0, 0.85), transparent 65%),
 			repeating-linear-gradient(45deg, var(--color-banner-line) 0, var(--color-banner-line) 1px, transparent 1px, transparent 18px),
